@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 name: CI
 
 on:
@@ -30,3 +31,6 @@ jobs:
 
       - name: Test
         run: dotnet test Library.sln --configuration Release --no-build --verbosity normal
+=======
+
+>>>>>>> 25cb5e7ba44b28f6e09f6dbd171ed6350ff68a21
