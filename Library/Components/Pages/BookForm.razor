@@ -1,0 +1,59 @@
+@page "/books/add"
+@page "/books/edit/{Id:int}"
+@rendermode InteractiveServer
+@inject LibraryService LibraryService
+@inject NavigationManager Navigation
+
+<PageTitle>@(Id == null ? "Add Book" : "Edit Book")</PageTitle>
+
+@if (book == null)
+{
+    <p>Book not found. <a href="/books">Back to books</a></p>
+}
+else
+{
+    <h1>@(Id == null ? "Add Book" : "Edit Book")</h1>
+    <FormBody Model="book" OnValidSubmit="Save" CancelUrl="/books">
+        <div class="mb-3">
+            <label for="book-title" class="form-label">Title</label>
+            <InputText id="book-title" class="form-control" @bind-Value="book.Title" />
+        </div>
+        <div class="mb-3">
+            <label for="book-author" class="form-label">Author</label>
+            <InputText id="book-author" class="form-control" @bind-Value="book.Author" />
+        </div>
+        <div class="mb-3">
+            <label for="book-isbn" class="form-label">ISBN</label>
+            <InputText id="book-isbn" class="form-control" @bind-Value="book.ISBN" />
+        </div>
+    </FormBody>
+}
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    private Book? book;
+
+    protected override void OnParametersSet()
+    {
+        if (Id == null)
+        {
+            book = new Book();
+            return;
+        }
+
+        var existing = LibraryService.GetBook(Id.Value);
+        book = existing == null ? null : new Book
+        {
+            Id = existing.Id, Title = existing.Title,
+            Author = existing.Author, ISBN = existing.ISBN
+        };
+    }
+
+    private void Save()
+    {
+        if (book == null) return;
+        if (Id == null) LibraryService.AddBook(book);
+        else LibraryService.EditBook(book);
+        Navigation.NavigateTo("/books");
+    }
+}

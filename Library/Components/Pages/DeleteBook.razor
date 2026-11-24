@@ -1,0 +1,47 @@
+@page "/books/delete/{Id:int}"
+@rendermode InteractiveServer
+@inject LibraryService LibraryService
+@inject NavigationManager Navigation
+
+<PageTitle>Delete Book</PageTitle>
+
+@if (book == null)
+{
+    <p>Book not found. <a href="/books">Back to books</a></p>
+}
+else
+{
+    <h1>Delete Book</h1>
+    <p>Are you sure you want to delete <strong>@book.Title</strong> by @book.Author?</p>
+    <p>Total copies: @copies</p>
+    <FormBody Model="book" OnValidSubmit="Delete" SubmitText="Delete" SubmitClass="btn-danger" CancelUrl="/books">
+        <div class="mb-3">
+            <label for="delete-scope" class="form-label">What would you like to delete?</label>
+            <InputSelect id="delete-scope" class="form-select" @bind-Value="deleteScope">
+                <option value="one">One copy</option>
+                <option value="all">All copies</option>
+            </InputSelect>
+        </div>
+    </FormBody>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+    private Book? book;
+    private int copies;
+    private string deleteScope = "one";
+
+    protected override void OnParametersSet()
+    {
+        book = LibraryService.GetBook(Id);
+        copies = book == null ? 0 : LibraryService.CountCopies(book.ISBN);
+    }
+
+    private void Delete()
+    {
+        if (book == null) return;
+        if (deleteScope == "all") LibraryService.DeleteAllCopies(book.ISBN);
+        else LibraryService.DeleteBook(Id);
+        Navigation.NavigateTo("/books");
+    }
+}

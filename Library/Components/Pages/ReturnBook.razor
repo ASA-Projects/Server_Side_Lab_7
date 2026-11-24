@@ -1,0 +1,57 @@
+@page "/users/return/{Id:int}"
+@rendermode InteractiveServer
+@inject LibraryService LibraryService
+@inject NavigationManager Navigation
+
+<PageTitle>Return Books</PageTitle>
+
+@if (user == null)
+{
+    <p>User not found. <a href="/users">Back to users</a></p>
+}
+else
+{
+    <h1>Return Books</h1>
+    <p>Choose the books @user.Name is returning.</p>
+    <FormBody Model="choices" SubmitText="Return selected" OnValidSubmit="Save" CancelUrl="/users">
+        @if (choices.Count == 0)
+        {
+            <p>This user has no borrowed books.</p>
+        }
+        @foreach (var choice in choices)
+        {
+            <div class="form-check mb-2">
+                <InputCheckbox id="@($"return-{choices.IndexOf(choice)}")" class="form-check-input" @bind-Value="choice.Selected" />
+                <label class="form-check-label" for="@($"return-{choices.IndexOf(choice)}")">
+                    @choice.Book.Title by @choice.Book.Author (ISBN: @choice.Book.ISBN)
+                </label>
+            </div>
+        }
+    </FormBody>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+    private User? user;
+    private List<ReturnChoice> choices = new();
+
+    private class ReturnChoice
+    {
+        public Book Book { get; set; } = default!;
+        public bool Selected { get; set; }
+    }
+
+    protected override void OnParametersSet()
+    {
+        user = LibraryService.GetUser(Id);
+        choices = user == null ? new() : LibraryService.GetBorrowedBooks(user)
+            .Select(book => new ReturnChoice { Book = book }).ToList();
+    }
+
+    private void Save()
+    {
+        foreach (var choice in choices.Where(c => c.Selected))
+            LibraryService.ReturnBook(Id, choice.Book.Id);
+        Navigation.NavigateTo("/users");
+    }
+}

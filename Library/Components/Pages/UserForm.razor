@@ -1,0 +1,54 @@
+@page "/users/add"
+@page "/users/edit/{Id:int}"
+@rendermode InteractiveServer
+@inject LibraryService LibraryService
+@inject NavigationManager Navigation
+
+<PageTitle>@(Id == null ? "Add User" : "Edit User")</PageTitle>
+
+@if (user == null)
+{
+    <p>User not found. <a href="/users">Back to users</a></p>
+}
+else
+{
+    <h1>@(Id == null ? "Add User" : "Edit User")</h1>
+    <FormBody Model="user" OnValidSubmit="Save" CancelUrl="/users">
+        <div class="mb-3">
+            <label for="user-name" class="form-label">Name</label>
+            <InputText id="user-name" class="form-control" @bind-Value="user.Name" />
+        </div>
+        <div class="mb-3">
+            <label for="user-email" class="form-label">Email</label>
+            <InputText id="user-email" class="form-control" @bind-Value="user.Email" />
+        </div>
+    </FormBody>
+}
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    private User? user;
+
+    protected override void OnParametersSet()
+    {
+        if (Id == null)
+        {
+            user = new User();
+            return;
+        }
+
+        var existing = LibraryService.GetUser(Id.Value);
+        user = existing == null ? null : new User
+        {
+            Id = existing.Id, Name = existing.Name, Email = existing.Email
+        };
+    }
+
+    private void Save()
+    {
+        if (user == null) return;
+        if (Id == null) LibraryService.AddUser(user);
+        else LibraryService.EditUser(user);
+        Navigation.NavigateTo("/users");
+    }
+}

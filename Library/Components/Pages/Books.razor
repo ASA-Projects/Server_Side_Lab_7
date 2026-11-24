@@ -1,0 +1,67 @@
+@page "/books"
+@inject LibraryService LibraryService
+
+<PageTitle>Book Management</PageTitle>
+
+<h1 class="mb-4">Book Management</h1>
+<a class="btn btn-primary mb-3" href="/books/add">Add Book</a>
+
+<div class="grid-2">
+    <section class="menu-section">
+        <header class="menu-section-header"><h2>Available Books</h2></header>
+        <div class="w-100" data-list="title,author,isbn">
+            <input class="search form-control mb-2" placeholder="Search books..." aria-label="Search books" />
+            <button class="sort btn btn-outline-secondary mb-2" data-sort="title">Sort by title</button>
+            <div class="list menu-cards-collection">
+                @foreach (var (book, bookCount) in bookGroups)
+                {
+                    <div class="menu-card">
+                        <h3 class="title fs-500">@book.Title</h3>
+                        <div>Author: <span class="author">@book.Author</span></div>
+                        <div>ISBN: <span class="isbn">@book.ISBN</span></div>
+                        <div>Available copies: @bookCount</div>
+                        <div>
+                            @if (bookCount > 0)
+                            {
+                                <a class="btn btn-primary" href="@($"/books/borrow/{book.Id}")">Borrow</a>
+                            }
+                            <a class="btn btn-primary" href="@($"/books/edit/{book.Id}")">Edit</a>
+                            <a class="btn btn-danger" href="@($"/books/delete/{book.Id}")">Delete</a>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+    <section class="menu-section">
+        <header class="menu-section-header"><h2>Borrowed Books</h2></header>
+        @if (!borrowedBooks.Any(pair => pair.Value.Count > 0))
+        {
+            <p class="px-3">No borrowed books.</p>
+        }
+        @foreach (var (user, loans) in borrowedBooks.Where(pair => pair.Value.Count > 0))
+        {
+            <div class="menu-section-card">
+                <h3 class="fs-500">@user.Name</h3>
+                <ul>
+                    @foreach (var loan in loans)
+                    {
+                        <li>@loan.Title by @loan.Author</li>
+                    }
+                </ul>
+                <a class="btn btn-primary" href="@($"/users/return/{user.Id}")">Return books</a>
+            </div>
+        }
+    </section>
+</div>
+
+@code {
+    private Dictionary<Book, int> bookGroups = new();
+    private Dictionary<User, List<Book>> borrowedBooks = new();
+
+    protected override void OnInitialized()
+    {
+        bookGroups = LibraryService.GetBooks();
+        borrowedBooks = LibraryService.GetBorrowedBooks();
+    }
+}

@@ -1,0 +1,55 @@
+@page "/users"
+@inject LibraryService LibraryService
+
+<PageTitle>User Management</PageTitle>
+
+<h1 class="mb-4">User Management</h1>
+<a class="btn btn-primary mb-3" href="/users/add">Add User</a>
+
+<section class="menu-section">
+    <header class="menu-section-header"><h2>Library Users</h2></header>
+    <div class="w-100" data-list="name,email">
+        <input class="search form-control mb-2" placeholder="Search users..." aria-label="Search users" />
+        <button class="sort btn btn-outline-secondary mb-2" data-sort="name">Sort by name</button>
+        <div class="list menu-cards-collection">
+            @foreach (var user in users)
+            {
+                <div class="menu-card">
+                    <h3 class="name fs-500">@user.Name</h3>
+                    <div>ID: @user.Id</div>
+                    <div>Email: <span class="email">@user.Email</span></div>
+                    @if (borrowedBooks.TryGetValue(user, out var loans) && loans.Count > 0)
+                    {
+                        <div>Borrowed books:</div>
+                        <ul>
+                            @foreach (var loan in loans)
+                            {
+                                <li>@loan.Title</li>
+                            }
+                        </ul>
+                        <a class="btn btn-primary" href="@($"/users/return/{user.Id}")">Return books</a>
+                    }
+                    else
+                    {
+                        <div>No borrowed books.</div>
+                    }
+                    <div>
+                        <a class="btn btn-primary" href="@($"/users/edit/{user.Id}")">Edit</a>
+                        <a class="btn btn-danger" href="@($"/users/delete/{user.Id}")">Delete</a>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+@code {
+    private List<User> users = new();
+    private Dictionary<User, List<Book>> borrowedBooks = new();
+
+    protected override void OnInitialized()
+    {
+        users = LibraryService.GetUsers();
+        borrowedBooks = LibraryService.GetBorrowedBooks();
+    }
+}
