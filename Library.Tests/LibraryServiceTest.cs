@@ -45,7 +45,7 @@ public sealed class LibraryServiceTest
         var book = service.GetBook(3);
 
         Assert.IsNotNull(book);
-        Assert.AreEqual("Emma", book.Title);
+        Assert.AreEqual("Wrong Title", book.Title);
         Assert.AreEqual("Austen", book.Author);
         Assert.AreEqual("222", book.ISBN);
     }
