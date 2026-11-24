@@ -1,0 +1,9 @@
+**/bin/
+**/obj/
+**/Debug/
+**/Release/
+.vs/
+**/TestResults/
+*.user
+*.suo
+*.zip
